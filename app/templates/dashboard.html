@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Parking overview</h1>
+<p>{{ free }} of {{ total }} spaces free</p>
+
+<div class="grid">
+  {% for s in spaces %}
+    <div class="space {{ s.status|lower }}">
+      <span class="label">{{ s.label }}</span>
+      <span>{{ s.status }}</span>
+      <small>{{ s.zone }}</small>
+    </div>
+  {% endfor %}
+</div>
+{% endblock %}

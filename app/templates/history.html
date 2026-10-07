@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}History{% endblock %}
+{% block content %}
+<h1>Parking history</h1>
+{% if sessions %}
+<table>
+  <tr><th>User</th><th>Space</th><th>Check-in</th><th>Check-out</th></tr>
+  {% for s in sessions %}
+  <tr><td>{{ s.user }}</td><td>{{ s.space }}</td><td>{{ s.check_in }}</td><td>{{ s.check_out or "—" }}</td></tr>
+  {% endfor %}
+</table>
+{% else %}
+<p>No parking sessions yet.</p>
+{% endif %}
+{% endblock %}
