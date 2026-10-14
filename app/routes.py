@@ -1,3 +1,7 @@
+import uuid
+from database import register_user
+
+
 from flask import Blueprint, jsonify, render_template, request, redirect, url_for, flash
 
 bp = Blueprint("main", __name__)
@@ -20,14 +24,38 @@ def dashboard():
     return render_template("dashboard.html", spaces=SPACES, free=free, total=len(SPACES))
 
 
+
 @bp.route("/register", methods=["GET", "POST"])
 def register():
     if request.method == "POST":
         name = request.form.get("name", "").strip()
-        # TODO: save user, generate unique ID and QR code
-        flash(f"Registration received for {name} (not saved yet).")
+        email = request.form.get("email", "").strip()
+        accessibility_need = (
+            request.form.get("needs_accessible") == "on"
+        )
+
+        if not name or not email:
+            flash("Please enter your name and email.")
+            return redirect(url_for("main.register"))
+
+        user_id = "USER-" + uuid.uuid4().hex[:12].upper()
+
+        success, message = register_user(
+            user_id,
+            name,
+            email,
+            accessibility_need
+        )
+
+        flash(message)
+
+        if success:
+            flash(f"Your User ID is: {user_id}")
+
         return redirect(url_for("main.register"))
+
     return render_template("register.html")
+
 
 
 @bp.route("/history")
