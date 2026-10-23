@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}QR token{% endblock %}
+{% block content %}
+<div class="page-heading"><div><p class="eyebrow">USER IDENTIFICATION</p><h1>QR token</h1></div></div>
+<section class="panel narrow">
+<p><strong>{{ user.name }}</strong> · {{ user.user_id }}</p>
+<p>Use the token below as the content when generating the user's QR code. This page displays the token, not a rendered QR image.</p>
+<code class="token">{{ user.qr_token or 'No QR token stored. Register a new user or add a token to the database.' }}</code>
+<p class="muted">For production use, protect this page behind administrator login and avoid sharing QR tokens publicly.</p>
+</section>
+{% endblock %}

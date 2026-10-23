@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Register user{% endblock %}
+{% block content %}
+<div class="page-heading"><div><p class="eyebrow">USER MANAGEMENT</p><h1>Register a user</h1>
+<p class="muted">The system creates a unique random QR token for each user.</p></div></div>
+<section class="panel narrow">
+<form method="post" class="form">
+  <label>User ID<input name="user_id" required maxlength="80" value="{{ request.form.get('user_id','') }}"></label>
+  <label>Full name<input name="name" required maxlength="120" value="{{ request.form.get('name','') }}"></label>
+  <label>Email address<input type="email" name="email" required maxlength="254" value="{{ request.form.get('email','') }}"></label>
+  <label class="check-label"><input type="checkbox" name="accessibility_need" {% if request.form.get('accessibility_need') %}checked{% endif %}> Requires an accessible parking space</label>
+  <button class="button" type="submit">Register user</button>
+</form>
+{% if created_user_id and created_token %}
+  <div class="token-box"><h3>User registered successfully</h3><p>User ID: <strong>{{ created_user_id }}</strong></p>
+  <p>QR token (use this as the QR-code content):</p><code class="token">{{ created_token }}</code>
+  <p><a href="{{ url_for('user_qr', user_id=created_user_id) }}">Open QR-token page →</a></p></div>
+{% endif %}
+</section>
+{% endblock %}

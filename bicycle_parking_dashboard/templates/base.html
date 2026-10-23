@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Smart Bicycle Parking{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="{{ url_for('dashboard') }}">🚲 Smart Bicycle Parking</a>
+  <nav>
+    <a href="{{ url_for('dashboard') }}">Dashboard</a>
+    <a href="{{ url_for('spaces') }}">Parking spaces</a>
+    <a href="{{ url_for('user_list') }}">Users</a>
+    <a href="{{ url_for('add_user') }}">Register user</a>
+    <a href="{{ url_for('scan') }}">QR check-in/out</a>
+    <a href="{{ url_for('history') }}">History</a>
+  </nav>
+</header>
+<main class="container">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, message in messages %}
+        <div class="alert {{ category }}">{{ message }}</div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+  {% block content %}{% endblock %}
+</main>
+<footer>Smart Bicycle Parking System · Flask + SQLite</footer>
+</body>
+</html>
