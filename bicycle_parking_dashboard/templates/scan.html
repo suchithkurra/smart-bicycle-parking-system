@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}QR check-in/out{% endblock %}
+{% block content %}
+<div class="page-heading"><div><p class="eyebrow">PARKING SESSION</p><h1>QR check-in / check-out</h1>
+<p class="muted">Paste the QR token here for testing. A camera scanner can be connected later.</p></div></div>
+<section class="panel narrow">
+<form method="post" class="form">
+  <label>Scanned QR token or user ID<input name="qr_token" required autofocus autocomplete="off" placeholder="Paste QR token here"></label>
+  <button class="button" type="submit">Process scan</button>
+</form>
+<p class="hint">If the user has no active booking, the system checks them in and allocates a space. If they already have an active booking, the system checks them out.</p>
+</section>
+{% endblock %}

@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Dashboard · Smart Bicycle Parking{% endblock %}
+{% block content %}
+<div class="page-heading">
+  <div><p class="eyebrow">OVERVIEW</p><h1>Parking dashboard</h1>
+  <p class="muted">Current parking-space status and recent activity.</p></div>
+  <a class="button" href="{{ url_for('scan') }}">＋ Record QR scan</a>
+</div>
+<section class="stats">
+  <article class="stat"><span>Total spaces</span><strong>{{ total }}</strong></article>
+  <article class="stat"><span>Free spaces</span><strong class="green-text">{{ free }}</strong></article>
+  <article class="stat"><span>Occupied spaces</span><strong class="red-text">{{ occupied }}</strong></article>
+  <article class="stat"><span>Registered users</span><strong>{{ users }}</strong></article>
+</section>
+<section class="panel">
+  <div class="section-heading"><h2>Parking spaces</h2><a href="{{ url_for('spaces') }}">Manage spaces →</a></div>
+  <div class="space-grid">
+    {% for spot in spots %}
+      <div class="space-card {{ 'occupied' if spot.status == 'OCCUPIED' else 'free' }}">
+        <div class="space-top"><strong>{{ spot.spot_name }}</strong>
+          <span class="pill">{{ spot.status }}</span></div>
+        <p>{% if spot.is_accessible %}♿ Accessible space{% else %}Standard space{% endif %}</p>
+        {% if spot.current_user_name %}<small>In use by {{ spot.current_user_name }}</small>
+        {% else %}<small>Available for allocation</small>{% endif %}
+      </div>
+    {% else %}
+      <p>No parking spaces found.</p>
+    {% endfor %}
+  </div>
+</section>
+<section class="panel">
+  <div class="section-heading"><h2>Recent parking activity</h2><a href="{{ url_for('history') }}">View all →</a></div>
+  <div class="table-wrap"><table>
+    <thead><tr><th>User</th><th>User ID</th><th>Space</th><th>Check-in</th><th>Check-out</th><th>Status</th></tr></thead>
+    <tbody>
+    {% for row in recent %}
+      <tr><td>{{ row.name }}</td><td>{{ row.user_id }}</td><td>{{ row.spot_name }}</td>
+      <td>{{ row.check_in }}</td><td>{{ row.check_out or '—' }}</td>
+      <td><span class="pill {{ 'pill-active' if row.status == 'ACTIVE' else '' }}">{{ row.status }}</span></td></tr>
+    {% else %}<tr><td colspan="6" class="empty">No parking activity recorded yet.</td></tr>{% endfor %}
+    </tbody>
+  </table></div>
+</section>
+{% endblock %}
