@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Your QR Code — Smart Bicycle Parking</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Source+Sans+3:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="page">
+        <header class="brand">
+            <div class="brand-kicker">Campus Access</div>
+            <h1>Smart Bicycle Parking</h1>
+            <p>Your registration is complete.</p>
+        </header>
+
+        <main class="card">
+            <div class="card-rule"></div>
+            <h2>Registration Successful</h2>
+            <p class="lede">Keep this QR code with you when you park.</p>
+
+            <ul class="meta">
+                <li>
+                    <span>Name</span>
+                    <strong>{{ user["name"] }}</strong>
+                </li>
+                <li>
+                    <span>User ID</span>
+                    <strong>{{ user["user_id"] }}</strong>
+                </li>
+            </ul>
+
+            <div class="qr-frame">
+                <img src="/qr/{{ user['user_id'] }}" alt="User QR Code">
+            </div>
+
+            <a class="btn" href="/qr/{{ user['user_id'] }}/download">Save QR</a>
+            <a class="link-quiet" href="/">Register another user</a>
+        </main>
+    </div>
+</body>
+</html>

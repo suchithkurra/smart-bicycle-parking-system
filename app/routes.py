@@ -1,3 +1,8 @@
+import uuid
+from database import register_user, find_user
+from generate_qr import generate_qr
+from flask import send_file, abort
+
 from flask import Blueprint, jsonify, render_template, request, redirect, url_for, flash
 
 bp = Blueprint("main", __name__)
@@ -20,14 +25,49 @@ def dashboard():
     return render_template("dashboard.html", spaces=SPACES, free=free, total=len(SPACES))
 
 
+
+
 @bp.route("/register", methods=["GET", "POST"])
 def register():
     if request.method == "POST":
         name = request.form.get("name", "").strip()
-        # TODO: save user, generate unique ID and QR code
-        flash(f"Registration received for {name} (not saved yet).")
-        return redirect(url_for("main.register"))
+        email = request.form.get("email", "").strip()
+        accessibility_need = (
+            request.form.get("needs_accessible") == "on"
+        )
+
+        if not name or not email:
+            flash("Please enter your name and email.")
+            return redirect(url_for("main.register"))
+
+        user_id = "USER-" + uuid.uuid4().hex[:12].upper()
+
+        success, message = register_user(
+            user_id,
+            name,
+            email,
+            accessibility_need
+        )
+
+        if not success:
+            flash(message)
+            return redirect(url_for("main.register"))
+
+        flash(message)
+
+        return render_template(
+            "qr.html",
+            user={
+                "user_id": user_id,
+                "name": name,
+                "email": email,
+                "accessibility_need": accessibility_need
+            }
+        )
+
     return render_template("register.html")
+
+
 
 
 @bp.route("/history")
@@ -51,3 +91,35 @@ def api_scan():
         return jsonify({"error": "user_id is required"}), 400
     # TODO: check user, then check in (assign space) or check out
     return jsonify({"user_id": user_id, "message": "Scan received (logic not implemented yet)"}), 501
+
+
+@bp.route("/qr/<user_id>")
+def show_qr(user_id):
+    user = find_user(user_id)
+
+    if not user:
+        abort(404)
+
+    qr_image = generate_qr(user_id)
+
+    return send_file(
+        qr_image,
+        mimetype="image/png"
+    )
+
+
+@bp.route("/qr/<user_id>/download")
+def download_qr(user_id):
+    user = find_user(user_id)
+
+    if not user:
+        abort(404)
+
+    qr_image = generate_qr(user_id)
+
+    return send_file(
+        qr_image,
+        mimetype="image/png",
+        as_attachment=True,
+        download_name=f"{user_id}_QR.png"
+    )
