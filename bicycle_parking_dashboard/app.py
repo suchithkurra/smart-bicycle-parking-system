@@ -32,7 +32,7 @@ def init_db():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             user_id TEXT NOT NULL UNIQUE,
             name TEXT NOT NULL,
-            email TEXT NOT NULL,
+            email TEXT NOT NULL UNIQUE,
             accessibility_need INTEGER NOT NULL DEFAULT 0
                 CHECK (accessibility_need IN (0, 1)),
             qr_token TEXT UNIQUE,
@@ -201,37 +201,59 @@ def user_list():
     return render_template("users.html", users=users)
 
 
+
 @app.route("/users/add", methods=["GET", "POST"])
 def add_user():
     if request.method == "POST":
-        user_id = request.form.get("user_id", "").strip()
-        name = request.form.get("name", "").strip()
+        first_name = request.form.get("first_name", "").strip()
+        last_name = request.form.get("last_name", "").strip()
         email = request.form.get("email", "").strip()
         accessibility = 1 if request.form.get("accessibility_need") == "on" else 0
-        qr_token = new_qr_token()
 
-        if not user_id or not name or not email:
+        if not first_name or not last_name or not email:
             flash("Please fill in all required fields.", "error")
             return render_template("add_user.html")
 
+        name = f"{first_name} {last_name}"
+        qr_token = secrets.token_urlsafe(24)
+
         try:
             with get_db() as db:
+                # Check for an existing email, ignoring letter case.
+                existing_email = db.execute(
+                    "SELECT 1 FROM Users WHERE email = ? COLLATE NOCASE",
+                    (email,)
+                ).fetchone()
+
+                if existing_email:
+                    flash("This email address is already registered.", "error")
+                    return render_template("add_user.html")
+
+                # Generate a unique User ID.
+                while True:
+                    user_id = "USR-" + secrets.token_hex(4).upper()
+                    existing_id = db.execute(
+                        "SELECT 1 FROM Users WHERE user_id = ?",
+                        (user_id,)
+                    ).fetchone()
+                    if not existing_id:
+                        break
+
                 db.execute("""
                     INSERT INTO Users
                         (user_id, name, email, accessibility_need, qr_token)
                     VALUES (?, ?, ?, ?, ?)
                 """, (user_id, name, email, accessibility, qr_token))
-            flash(
-                "User registered. Save or photograph the QR code below for check-in and check-out.",
-                "success",
-            )
+
+            flash("User registered successfully.", "success")
             return render_template(
                 "add_user.html",
                 created_user_id=user_id,
-                created_name=name,
+                created_token=qr_token
             )
+
         except sqlite3.IntegrityError:
-            flash("That user ID or QR token already exists.", "error")
+            flash("This email or user ID is already registered.", "error")
 
     return render_template("add_user.html")
 
