@@ -2,7 +2,7 @@
 {% block title %}Register user{% endblock %}
 {% block content %}
 <div class="page-heading"><div><p class="eyebrow">USER MANAGEMENT</p><h1>Register a user</h1>
-<p class="muted">The system creates a unique random QR token for each user.</p></div></div>
+<p class="muted">Each user gets a unique QR code used to check in and check out a bicycle.</p></div></div>
 <section class="panel narrow">
 <form method="post" class="form">
   <label>User ID<input name="user_id" required maxlength="80" value="{{ request.form.get('user_id','') }}"></label>
@@ -11,10 +11,17 @@
   <label class="check-label"><input type="checkbox" name="accessibility_need" {% if request.form.get('accessibility_need') %}checked{% endif %}> Requires an accessible parking space</label>
   <button class="button" type="submit">Register user</button>
 </form>
-{% if created_user_id and created_token %}
-  <div class="token-box"><h3>User registered successfully</h3><p>User ID: <strong>{{ created_user_id }}</strong></p>
-  <p>QR token (use this as the QR-code content):</p><code class="token">{{ created_token }}</code>
-  <p><a href="{{ url_for('user_qr', user_id=created_user_id) }}">Open QR-token page →</a></p></div>
+{% if created_user_id %}
+  <div class="token-box qr-success">
+    <h3>QR code for {{ created_name or created_user_id }}</h3>
+    <p>Photograph this code or download the PNG. The scanner on the check-in page reads this QR — not the user ID.</p>
+    <img class="qr-image" src="{{ url_for('user_qr_image', user_id=created_user_id) }}" alt="Parking QR code for {{ created_user_id }}">
+    <div class="qr-actions">
+      <a class="button" href="{{ url_for('user_qr_image', user_id=created_user_id, download=1) }}">Download QR code</a>
+      <a class="button secondary" href="{{ url_for('user_qr', user_id=created_user_id) }}">Open full-size QR page</a>
+      <a class="button secondary" href="{{ url_for('scan') }}">Go to check-in scanner</a>
+    </div>
+  </div>
 {% endif %}
 </section>
 {% endblock %}

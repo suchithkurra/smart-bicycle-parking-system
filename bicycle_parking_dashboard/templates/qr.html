@@ -1,11 +1,19 @@
 {% extends "base.html" %}
-{% block title %}QR token{% endblock %}
+{% block title %}QR code{% endblock %}
 {% block content %}
-<div class="page-heading"><div><p class="eyebrow">USER IDENTIFICATION</p><h1>QR token</h1></div></div>
-<section class="panel narrow">
-<p><strong>{{ user.name }}</strong> · {{ user.user_id }}</p>
-<p>Use the token below as the content when generating the user's QR code. This page displays the token, not a rendered QR image.</p>
-<code class="token">{{ user.qr_token or 'No QR token stored. Register a new user or add a token to the database.' }}</code>
-<p class="muted">For production use, protect this page behind administrator login and avoid sharing QR tokens publicly.</p>
+<div class="page-heading"><div><p class="eyebrow">USER IDENTIFICATION</p><h1>Parking QR code</h1>
+<p class="muted">Photograph this code or download it. Present it at the scanner to check in or check out.</p></div></div>
+<section class="panel narrow qr-panel">
+  <p><strong>{{ user.name }}</strong> · {{ user.user_id }}</p>
+  {% if user.qr_token %}
+    <img class="qr-image" src="{{ url_for('user_qr_image', user_id=user.user_id) }}" alt="Parking QR code for {{ user.name }}">
+    <div class="qr-actions">
+      <a class="button" href="{{ url_for('user_qr_image', user_id=user.user_id, download=1) }}">Download QR code</a>
+      <a class="button secondary" href="{{ url_for('scan') }}">Open check-in scanner</a>
+    </div>
+    <p class="hint">Keep this QR private. Anyone who scans it can check this user in or out.</p>
+  {% else %}
+    <p class="hint">No QR token is stored for this user.</p>
+  {% endif %}
 </section>
 {% endblock %}

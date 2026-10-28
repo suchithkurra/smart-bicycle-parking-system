@@ -1,12 +1,13 @@
+import io
 import os
 import sqlite3
 import secrets
 from datetime import datetime
-from functools import wraps
 
+import qrcode
 from flask import (
     Flask, render_template, request, redirect, url_for,
-    flash, abort
+    flash, abort, send_file
 )
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
@@ -82,6 +83,38 @@ def init_db():
                     "VALUES (?, ?, 'FREE')",
                     (f"A{i:02d}", accessible)
                 )
+
+
+def new_qr_token():
+    return secrets.token_urlsafe(24)
+
+
+def qr_png_bytes(payload):
+    qr = qrcode.QRCode(
+        version=None,
+        error_correction=qrcode.constants.ERROR_CORRECT_M,
+        box_size=10,
+        border=2,
+    )
+    qr.add_data(payload)
+    qr.make(fit=True)
+    image = qr.make_image(fill_color="black", back_color="white")
+    buffer = io.BytesIO()
+    image.save(buffer, format="PNG")
+    buffer.seek(0)
+    return buffer
+
+
+def ensure_qr_token(db, user):
+    token = user["qr_token"]
+    if token:
+        return token
+    token = new_qr_token()
+    db.execute(
+        "UPDATE Users SET qr_token=? WHERE user_id=?",
+        (token, user["user_id"]),
+    )
+    return token
 
 
 def priority_allocate(db, user):
@@ -175,7 +208,7 @@ def add_user():
         name = request.form.get("name", "").strip()
         email = request.form.get("email", "").strip()
         accessibility = 1 if request.form.get("accessibility_need") == "on" else 0
-        qr_token = secrets.token_urlsafe(24)
+        qr_token = new_qr_token()
 
         if not user_id or not name or not email:
             flash("Please fill in all required fields.", "error")
@@ -188,9 +221,14 @@ def add_user():
                         (user_id, name, email, accessibility_need, qr_token)
                     VALUES (?, ?, ?, ?, ?)
                 """, (user_id, name, email, accessibility, qr_token))
-            flash("User registered. Use the QR token shown below to create a QR code.", "success")
+            flash(
+                "User registered. Save or photograph the QR code below for check-in and check-out.",
+                "success",
+            )
             return render_template(
-                "add_user.html", created_user_id=user_id, created_token=qr_token
+                "add_user.html",
+                created_user_id=user_id,
+                created_name=name,
             )
         except sqlite3.IntegrityError:
             flash("That user ID or QR token already exists.", "error")
@@ -200,15 +238,37 @@ def add_user():
 
 @app.route("/users/<user_id>/qr")
 def user_qr(user_id):
-    # The QR content is a random token, not the user's name or email.
     with get_db() as db:
         user = db.execute(
             "SELECT user_id, name, qr_token FROM Users WHERE user_id=?",
             (user_id,)
         ).fetchone()
-    if user is None:
-        abort(404)
+        if user is None:
+            abort(404)
+        token = ensure_qr_token(db, user)
+        user = dict(user)
+        user["qr_token"] = token
     return render_template("qr.html", user=user)
+
+
+@app.route("/users/<user_id>/qr.png")
+def user_qr_image(user_id):
+    download = request.args.get("download") == "1"
+    with get_db() as db:
+        user = db.execute(
+            "SELECT user_id, qr_token FROM Users WHERE user_id=?",
+            (user_id,)
+        ).fetchone()
+        if user is None:
+            abort(404)
+        token = ensure_qr_token(db, user)
+    filename = f"{user['user_id']}-bicycle-parking-qr.png"
+    return send_file(
+        qr_png_bytes(token),
+        mimetype="image/png",
+        as_attachment=download,
+        download_name=filename,
+    )
 
 
 @app.route("/scan", methods=["GET", "POST"])
@@ -216,7 +276,7 @@ def scan():
     if request.method == "POST":
         token = request.form.get("qr_token", "").strip()
         if not token:
-            flash("Enter or scan a QR token.", "error")
+            flash("Scan the user QR code, or paste the token if the camera is unavailable.", "error")
             return redirect(url_for("scan"))
 
         with get_db() as db:
