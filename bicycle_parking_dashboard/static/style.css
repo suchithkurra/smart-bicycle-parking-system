@@ -501,3 +501,74 @@
         flex-wrap: wrap;
     }
 }
+
+/* Edit user pop-up overlay */
+#editModal.modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: rgba(0, 0, 0, 0.55);
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    box-sizing: border-box;
+    overflow-y: auto;
+}
+
+/* Pop-up form */
+#editModal .modal-content {
+    background: white;
+    color: #222;
+    width: 100%;
+    max-width: 420px;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 10px 35px rgba(0, 0, 0, 0.3);
+    box-sizing: border-box;
+}
+
+#editModal .modal-content h2 {
+    margin-top: 0;
+    margin-bottom: 20px;
+}
+
+#editModal .modal-content label {
+    display: block;
+    margin: 12px 0 6px;
+}
+
+#editModal .modal-content input[type="text"],
+#editModal .modal-content input[type="email"] {
+    width: 100%;
+    padding: 10px;
+    box-sizing: border-box;
+    margin-bottom: 10px;
+}
+
+#editModal .modal-content label input[type="checkbox"] {
+    width: auto;
+}
+
+#editModal .modal-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 20px;
+}
+
+/* Icon-only action button */
+.icon-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    padding: 0;
+    cursor: pointer;
+}
+
+.icon-button svg {
+    display: block;
+    flex-shrink: 0;
+}

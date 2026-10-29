@@ -31,7 +31,7 @@ def init_db():
         CREATE TABLE IF NOT EXISTS Users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             user_id TEXT NOT NULL UNIQUE,
-            name TEXT NOT NULL,
+            name TEXT NOT NULL UNIQUE,
             email TEXT NOT NULL UNIQUE,
             accessibility_need INTEGER NOT NULL DEFAULT 0
                 CHECK (accessibility_need IN (0, 1)),
@@ -64,7 +64,11 @@ def init_db():
         CREATE INDEX IF NOT EXISTS idx_bookings_user ON bookings(user_id);
         CREATE INDEX IF NOT EXISTS idx_bookings_spot_status
             ON bookings(spot_id, status);
+           
+   
+
         """)
+        
 
         # Add qr_token for older versions of Users, without deleting existing data.
         cols = {row["name"] for row in db.execute("PRAGMA table_info(Users)")}
@@ -82,6 +86,8 @@ def init_db():
                     "INSERT INTO parking_spots (spot_name, is_accessible, status) "
                     "VALUES (?, ?, 'FREE')",
                     (f"A{i:02d}", accessible)
+
+                    
                 )
 
 
@@ -180,7 +186,7 @@ def dashboard():
             FROM bookings b
             JOIN Users u ON u.user_id = b.user_id
             JOIN parking_spots p ON p.id = b.spot_id
-            ORDER BY b.id DESC LIMIT 8
+            ORDER BY b.id DESC LIMIT 6
         """).fetchall()
 
     return render_template(
@@ -249,55 +255,35 @@ def user_list():
     )
 
 
+
+
 @app.route("/users/<user_id>/edit", methods=["GET", "POST"])
 def edit_user(user_id):
-    with get_db() as db:
-        user = db.execute(
-            "SELECT * FROM Users WHERE user_id = ?",
-            (user_id,)
-        ).fetchone()
+    if request.method == "GET":
+        return redirect(url_for("user_list"))
 
-        if user is None:
-            flash("User not found.", "error")
-            return redirect(url_for("user_list"))
+    name = request.form.get("name", "").strip()
+    email = request.form.get("email", "").strip()
+    accessibility_need = int("accessibility_need" in request.form)
 
-        if request.method == "POST":
-            name = request.form.get("name", "").strip()
-            email = request.form.get("email", "").strip()
-            accessibility_need = int(
-                "accessibility_need" in request.form
-            )
+    if not name or not email:
+        flash("Name and email are required.", "error")
+        return redirect(url_for("user_list"))
 
-            if not name or not email:
-                flash("Name and email are required.", "error")
-                return render_template("edit_user.html", user=user)
-
-            duplicate = db.execute(
-                """
-                SELECT 1 FROM Users
-                WHERE email = ? COLLATE NOCASE
-                  AND user_id != ?
-                """,
-                (email, user_id)
-            ).fetchone()
-
-            if duplicate:
-                flash("This email is already registered.", "error")
-                return render_template("edit_user.html", user=user)
-
-            db.execute(
-                """
+    try:
+        with get_db() as db:
+            db.execute("""
                 UPDATE Users
                 SET name = ?, email = ?, accessibility_need = ?
                 WHERE user_id = ?
-                """,
-                (name, email, accessibility_need, user_id)
-            )
+            """, (name, email, accessibility_need, user_id))
 
-            flash("User updated successfully.", "success")
-            return redirect(url_for("user_list"))
+        flash("User updated successfully.", "success")
 
-    return render_template("edit_user.html", user=user)
+    except sqlite3.IntegrityError:
+        flash("That name or email is already registered.", "error")
+
+    return redirect(url_for("user_list"))
 
 
 @app.route("/users/<user_id>/delete", methods=["POST"])
