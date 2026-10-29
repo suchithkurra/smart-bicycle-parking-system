@@ -358,7 +358,7 @@ def scan():
                     f"{spot['spot_name']}.", "success"
                 )
 
-        return redirect(url_for("dashboard"))
+        return render_template("parking_result.html")
 
     return render_template("scan.html")
 

@@ -7,70 +7,127 @@
     <div>
         <p class="eyebrow">USER MANAGEMENT</p>
         <h1>Register a user</h1>
-        <p class="muted">The system automatically assigns a unique User ID and creates a unique QR token for each user.</p>
+        <p class="muted">
+            The system automatically assigns a unique User ID
+            and creates a unique QR token for each user.
+        </p>
     </div>
 </div>
 
-<section class="panel narrow">
-    <form method="post" class="form">
-        <label>
-            First name
-            <input name="first_name" required maxlength="60"
-                   value="{{ request.form.get('first_name', '') }}">
-        </label>
+<div class="registration-layout">
 
-        <label>
-            Last name
-            <input name="last_name" required maxlength="60"
-                   value="{{ request.form.get('last_name', '') }}">
-        </label>
+    <!-- LEFT SIDE: Registration form -->
+    <section class="panel registration-panel">
+        <h2>Register a user</h2>
 
-        <label>
-            Email address
-            <input type="email" name="email" required maxlength="254"
-                   value="{{ request.form.get('email', '') }}">
-        </label>
+        <form method="post" class="form">
 
-        <label class="check-label">
-            <input type="checkbox" name="accessibility_need"
-                   {% if request.form.get('accessibility_need') %}checked{% endif %}>
-            Requires an accessible parking space
-        </label>
+            <label>
+                First name
+                <input
+                    name="first_name"
+                    required
+                    maxlength="60"
+                    value="{{ request.form.get('first_name', '') }}">
+            </label>
 
-        <button class="button" type="submit">Register user</button>
-    </form>
+            <label>
+                Last name
+                <input
+                    name="last_name"
+                    required
+                    maxlength="60"
+                    value="{{ request.form.get('last_name', '') }}">
+            </label>
 
-    {% if created_user_id %}
-    <div class="token-box qr-success">
-        <h3>QR code for {{ created_name or created_user_id }}</h3>
-        <p>Use this QR code to check in and check out a bicycle.</p>
+            <label>
+                Email address
+                <input
+                    type="email"
+                    name="email"
+                    required
+                    maxlength="254"
+                    value="{{ request.form.get('email', '') }}">
+            </label>
 
-        <img class="qr-image"
-             src="{{ url_for('user_qr_image', user_id=created_user_id) }}"
-             alt="Parking QR code for {{ created_user_id }}">
+            <label class="check-label">
+                <input
+                    type="checkbox"
+                    name="accessibility_need"
+                    {% if request.form.get('accessibility_need') %}checked{% endif %}>
+                Requires an accessible parking space
+            </label>
 
-        {% if created_token %}
-        <p>User ID: <strong>{{ created_user_id }}</strong></p>
-        <p>QR token:</p>
-        <code class="token">{{ created_token }}</code>
+            <button class="button" type="submit">
+                Register user
+            </button>
+        </form>
+    </section>
+
+    <!-- RIGHT SIDE: QR code -->
+    <section class="panel registration-panel qr-panel">
+
+        {% if created_user_id %}
+
+            <div class="token-box qr-success">
+                <h2>QR Code Generated</h2>
+
+                <h3>{{ created_name or created_user_id }}</h3>
+
+                <p>
+                    Use this QR code to check in and check out a bicycle.
+                </p>
+
+                <img
+                    class="qr-image"
+                    src="{{ url_for('user_qr_image', user_id=created_user_id) }}"
+                    alt="Parking QR code for {{ created_user_id }}">
+
+                <p>
+                    User ID: <strong>{{ created_user_id }}</strong>
+                </p>
+
+                {% if created_token %}
+                    <p>QR token:</p>
+                    <code class="token">{{ created_token }}</code>
+                {% endif %}
+
+                <div class="qr-actions">
+                    <a
+                        class="button"
+                        href="{{ url_for('user_qr_image', user_id=created_user_id, download=1) }}">
+                        Download QR code
+                    </a>
+
+                    <a
+                        class="button secondary"
+                        href="{{ url_for('user_qr', user_id=created_user_id) }}">
+                        Open full-size QR page
+                    </a>
+
+                    <a
+                        class="button secondary"
+                        href="{{ url_for('scan') }}">
+                        Go to check-in scanner
+                    </a>
+                </div>
+            </div>
+
+        {% else %}
+
+            <div class="qr-placeholder">
+                <h2>QR Code</h2>
+                <p class="muted">
+                    Register a user to generate their QR code.
+                </p>
+                <div class="placeholder-icon">▦</div>
+                <p class="muted">The generated QR code will appear here.</p>
+            </div>
+
         {% endif %}
 
-        <div class="qr-actions">
-            <a class="button"
-               href="{{ url_for('user_qr_image', user_id=created_user_id, download=1) }}">
-                Download QR code
-            </a>
+    </section>
 
-            <a class="button secondary"
-               href="{{ url_for('user_qr', user_id=created_user_id) }}">
-                Open full-size QR page
-            </a>
+</div>
 
-            <a class="button secondary" href="{{ url_for('scan') }}">
-                Go to check-in scanner
-            </a>
-        </div>
-    </div>
-    {% endif %}
-</section>
 {% endblock %}
