@@ -1,0 +1,66 @@
+
+{% extends "base.html" %}
+{% block title %}Parking Availability · Smart Bicycle Parking{% endblock %}
+
+{% block content %}
+
+<div class="page-heading">
+  <div>
+    <p class="eyebrow">WELCOME</p>
+    <h1>Parking availability</h1>
+    <p class="muted">Check which bicycle parking spaces are available.</p>
+  </div>
+  <a class="button" href="{{ url_for('scan') }}">QR Check-in / Check-out</a>
+</div>
+
+<section class="stats">
+  <article class="stat">
+    <span>Total spaces</span>
+    <strong>{{ total }}</strong>
+  </article>
+
+  <article class="stat">
+    <span>Free spaces</span>
+    <strong class="green-text">{{ free }}</strong>
+  </article>
+
+  <article class="stat">
+    <span>Occupied spaces</span>
+    <strong class="red-text">{{ occupied }}</strong>
+  </article>
+</section>
+
+<section class="panel">
+  <div class="section-heading">
+    <h2>Parking spaces</h2>
+  </div>
+
+  <div class="space-grid">
+    {% for spot in spots %}
+      <div class="space-card {{ 'occupied' if spot.status == 'OCCUPIED' else 'free' }}">
+        <div class="space-top">
+          <strong>{{ spot.spot_name }}</strong>
+          <span class="pill">{{ spot.status }}</span>
+        </div>
+
+        <p>
+          {% if spot.is_accessible %}
+            ♿ Accessible space
+          {% else %}
+            Standard space
+          {% endif %}
+        </p>
+
+        {% if spot.status == 'FREE' %}
+          <small>Available for parking</small>
+        {% else %}
+          <small>Currently occupied</small>
+        {% endif %}
+      </div>
+    {% else %}
+      <p>No parking spaces found.</p>
+    {% endfor %}
+  </div>
+</section>
+
+{% endblock %}

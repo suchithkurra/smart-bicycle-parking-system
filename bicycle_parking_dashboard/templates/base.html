@@ -1,3 +1,4 @@
+
 <!doctype html>
 <html lang="en">
 <head>
@@ -6,19 +7,56 @@
   <title>{% block title %}Smart Bicycle Parking{% endblock %}</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
+
 <body>
+
 <header class="topbar">
-  <a class="brand" href="{{ url_for('dashboard') }}">🚲 Smart Bicycle Parking</a>
+
+  {% if session.get('is_admin') %}
+    <a class="brand" href="{{ url_for('dashboard') }}">
+      🚲 Smart Bicycle Parking
+    </a>
+  {% else %}
+    <a class="brand" href="{{ url_for('user_dashboard') }}">
+      🚲 Smart Bicycle Parking
+    </a>
+  {% endif %}
+
   <nav>
-    <a href="{{ url_for('dashboard') }}">Dashboard</a>
-    <a href="{{ url_for('spaces') }}">Parking spaces</a>
-    <a href="{{ url_for('user_list') }}">Users</a>
-    <a href="{{ url_for('add_user') }}">Register user</a>
-    <a href="{{ url_for('scan') }}">QR check-in/out</a>
-    <a href="{{ url_for('history') }}">History</a>
+
+    {% if session.get('is_admin') %}
+
+      <!-- ADMIN NAVIGATION: UNCHANGED -->
+
+      <a href="{{ url_for('dashboard') }}">Dashboard</a>
+      <a href="{{ url_for('spaces') }}">Parking spaces</a>
+      <a href="{{ url_for('scan') }}">QR check-in/out</a>
+      <a href="{{ url_for('user_list') }}">Users</a>
+      <a href="{{ url_for('add_user') }}">Register user</a>
+      <a href="{{ url_for('history') }}">History</a>
+
+      <form action="{{ url_for('admin_logout') }}" method="POST"
+            style="display:inline;">
+        <button type="submit">Logout</button>
+      </form>
+
+    {% else %}
+
+      <!-- PUBLIC USER NAVIGATION -->
+
+      <a href="{{ url_for('user_dashboard') }}">Home</a>
+      <a href="{{ url_for('add_user') }}">Registration</a>
+      <a href="{{ url_for('scan') }}">QR check-in/out</a>
+      <a href="{{ url_for('admin_login') }}">Admin Login</a>
+
+    {% endif %}
+
   </nav>
+
 </header>
+
 <main class="container">
+
   {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
       {% for category, message in messages %}
@@ -26,9 +64,16 @@
       {% endfor %}
     {% endif %}
   {% endwith %}
+
   {% block content %}{% endblock %}
+
 </main>
-<footer>Smart Bicycle Parking System · Flask + SQLite</footer>
+
+<footer>
+  Smart Bicycle Parking System · Flask + SQLite
+</footer>
+
 {% block scripts %}{% endblock %}
+
 </body>
 </html>

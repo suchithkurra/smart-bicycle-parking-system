@@ -572,3 +572,341 @@
     display: block;
     flex-shrink: 0;
 }
+
+/* ===== Administrator Login ===== */
+
+.admin-login {
+    width: 100%;
+    max-width: 420px;
+    margin: 60px auto;
+    padding: 36px;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    box-shadow: 0 12px 35px rgba(15, 23, 42, 0.08);
+    box-sizing: border-box;
+}
+
+.admin-login h1 {
+    margin: 0 0 10px;
+    color: #172033;
+    font-size: 28px;
+    font-weight: 700;
+    text-align: center;
+}
+
+.admin-login p {
+    margin: 0 0 28px;
+    color: #64748b;
+    font-size: 14px;
+    line-height: 1.6;
+    text-align: center;
+}
+
+.admin-login .form-group {
+    margin-bottom: 20px;
+}
+
+.admin-login label {
+    display: block;
+    margin-bottom: 8px;
+    color: #334155;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.admin-login input {
+    display: block;
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid #cbd5e1;
+    border-radius: 9px;
+    background: #f8fafc;
+    color: #172033;
+    font-size: 15px;
+    box-sizing: border-box;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.admin-login input:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+    background: #ffffff;
+}
+
+.admin-login button {
+    width: 100%;
+    margin-top: 6px;
+    padding: 13px;
+    border: none;
+    border-radius: 9px;
+    background: #2563eb;
+    color: #ffffff;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.2s;
+}
+
+.admin-login button:hover {
+    background: #1d4ed8;
+    transform: translateY(-1px);
+}
+
+.admin-login > a {
+    display: block;
+    margin-top: 22px;
+    color: #2563eb;
+    font-size: 14px;
+    text-align: center;
+    text-decoration: none;
+}
+
+.admin-login > a:hover {
+    text-decoration: underline;
+}
+
+@media (max-width: 480px) {
+    .admin-login {
+        margin: 28px auto;
+        padding: 26px 20px;
+    }
+
+    .admin-login h1 {
+        font-size: 24px;
+    }
+}
+
+/* =================================
+   PUBLIC HOME PAGE
+================================= */
+
+.user-hero {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+    gap: 45px;
+    padding: 55px 45px;
+    margin: 30px 0 50px;
+    background: #f0f6f4;
+    border-radius: 20px;
+}
+
+.hero-content {
+    max-width: 550px;
+}
+
+.hero-content .eyebrow {
+    color: #26836b;
+    font-weight: 700;
+    letter-spacing: 2px;
+    font-size: 13px;
+}
+
+.hero-content h1 {
+    font-size: clamp(36px, 5vw, 58px);
+    line-height: 1.1;
+    margin: 15px 0 20px;
+    color: #183b32;
+}
+
+.hero-description {
+    font-size: 17px;
+    line-height: 1.7;
+    color: #60736d;
+    margin-bottom: 28px;
+}
+
+.hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+}
+
+.hero-actions .button {
+    display: inline-block;
+    padding: 13px 22px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.hero-actions .button:first-child {
+    background: #23866d;
+    color: white;
+}
+
+.hero-actions .button:last-child {
+    background: white;
+    color: #23866d;
+    border: 1px solid #23866d;
+}
+
+.hero-actions .button:hover {
+    transform: translateY(-2px);
+    opacity: 0.9;
+}
+
+.hero-image img {
+    width: 100%;
+    height: 350px;
+    object-fit: cover;
+    border-radius: 16px;
+    display: block;
+}
+
+
+/* =================================
+   HOW IT WORKS
+================================= */
+
+.how-it-works {
+    margin: 50px 0;
+}
+
+.how-it-works .section-heading {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.how-it-works .section-heading h2,
+.availability-section .section-heading h2 {
+    color: #183b32;
+    font-size: 28px;
+}
+
+.steps-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 22px;
+}
+
+.step-card {
+    padding: 28px;
+    background: white;
+    border: 1px solid #e5ece9;
+    border-radius: 14px;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.step-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.07);
+}
+
+.step-number {
+    display: inline-block;
+    color: #23866d;
+    font-size: 24px;
+    font-weight: 800;
+    margin-bottom: 15px;
+}
+
+.step-card h3 {
+    color: #183b32;
+    margin-bottom: 10px;
+}
+
+.step-card p {
+    color: #718079;
+    line-height: 1.6;
+}
+
+
+/* =================================
+   PARKING AVAILABILITY
+================================= */
+
+.availability-section {
+    margin: 55px 0;
+}
+
+.availability-section .section-heading {
+    margin-bottom: 25px;
+}
+
+
+/* =================================
+   RESPONSIVE DESIGN
+================================= */
+
+@media (max-width: 850px) {
+
+    .user-hero {
+        grid-template-columns: 1fr;
+        padding: 35px 25px;
+        gap: 25px;
+    }
+
+    .hero-image img {
+        height: 280px;
+    }
+
+    .steps-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 500px) {
+
+    .user-hero {
+        padding: 25px 18px;
+    }
+
+    .hero-actions {
+        flex-direction: column;
+    }
+
+    .hero-actions .button {
+        text-align: center;
+    }
+
+    .hero-image img {
+        height: 220px;
+    }
+}
+/* Shared layout for both sections */
+.steps-grid,
+.availability-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 22px;
+}
+/* Make both sections use the same three-column layout */
+.steps-grid,
+.stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 22px;
+}
+
+/* Make all six boxes have the same dimensions */
+.step-card,
+.stat {
+    min-height: 180px;
+    height: 180px;
+    box-sizing: border-box;
+    padding: 28px;
+    border: 1px solid #e5ece9;
+    border-radius: 14px;
+    background: white;
+}
+
+/* Keep parking availability content centered */
+.stat {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    gap: 12px;
+}
+
+/* Responsive layout */
+@media (max-width: 850px) {
+    .steps-grid,
+    .stats {
+        grid-template-columns: 1fr;
+    }
+}

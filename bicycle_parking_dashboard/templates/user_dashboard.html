@@ -1,0 +1,102 @@
+
+{% extends "base.html" %}
+{% block title %}Home · Smart Bicycle Parking{% endblock %}
+
+{% block content %}
+
+<!-- Hero section -->
+<section class="user-hero">
+
+  <div class="hero-content">
+    <p class="eyebrow">SMART BICYCLE PARKING</p>
+
+    <h1>Park Smarter.<br>Ride Freely.</h1>
+
+    <p class="hero-description">
+      A simple and convenient way to park your bicycle.
+      Register, receive your personal QR code, and enjoy
+      an easier parking experience.
+    </p>
+
+    <div class="hero-actions">
+      <a class="button" href="{{ url_for('add_user') }}">
+        Register Now
+      </a>
+
+      <a class="button" href="{{ url_for('scan') }}">
+        QR Check-in / Check-out
+      </a>
+    </div>
+  </div>
+
+  <div class="hero-image">
+    <img src="{{ url_for('static', filename='images/bicycle-parking.jpg') }}"
+         alt="Bicycles in a modern bicycle parking facility">
+  </div>
+
+</section>
+
+
+<!-- How it works -->
+<section class="how-it-works">
+
+  <div class="section-heading">
+    <h2>How It Works</h2>
+    
+  </div>
+
+  <div class="steps-grid">
+
+    <article class="step-card">
+      <span class="step-number">01</span>
+      <h3>Register</h3>
+      <p>Create your account by providing your registration details.</p>
+    </article>
+
+    <article class="step-card">
+      <span class="step-number">02</span>
+      <h3>Get Your QR Code</h3>
+      <p>Receive your personal QR code after registration.</p>
+    </article>
+
+    <article class="step-card">
+      <span class="step-number">03</span>
+      <h3>Park Your Bicycle</h3>
+      <p>Scan your QR code to check in and check out.</p>
+    </article>
+
+  </div>
+
+</section>
+
+
+<!-- Parking availability -->
+<section class="availability-section">
+
+  <div class="section-heading">
+    <h2>Parking Availability</h2>
+    
+  </div>
+
+  <div class="stats">
+
+    <article class="stat">
+      <span>Total spaces</span>
+      <strong>{{ total }}</strong>
+    </article>
+
+    <article class="stat">
+      <span>Available spaces</span>
+      <strong class="green-text">{{ free }}</strong>
+    </article>
+
+    <article class="stat">
+      <span>Occupied spaces</span>
+      <strong class="red-text">{{ occupied }}</strong>
+    </article>
+
+  </div>
+
+</section>
+
+{% endblock %}

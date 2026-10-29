@@ -3,16 +3,17 @@ import os
 import sqlite3
 import secrets
 from datetime import datetime
-
+from functools import wraps
 import qrcode
 from flask import (
     Flask, render_template, request, redirect, url_for,
-    flash, abort, send_file
+    flash, abort, send_file, session
 )
-
+from werkzeug.security import generate_password_hash, check_password_hash
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 DATABASE = os.path.join(BASE_DIR, "bicycle parking.db")
-
+ADMIN_USERNAME = os.environ.get("ADMIN_USERNAME", "admin")
+ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD","admin")
 app = Flask(__name__)
 app.secret_key = os.environ.get("FLASK_SECRET_KEY", secrets.token_hex(32))
 
@@ -23,6 +24,20 @@ def get_db():
     conn.execute("PRAGMA foreign_keys = ON")
     return conn
 
+from functools import wraps
+
+def admin_required(view_function):
+    @wraps(view_function)
+    def wrapped_view(*args, **kwargs):
+        if not session.get('is_admin'):
+            flash('Please log in as an administrator.', 'error')
+            return redirect(url_for('admin_login'))
+
+        return view_function(*args, **kwargs)
+
+    return wrapped_view
+
+   
 
 def init_db():
     """Create the tables if they do not already exist. Existing data is preserved."""
@@ -38,7 +53,11 @@ def init_db():
             qr_token TEXT UNIQUE,
             created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
         );
-
+        CREATE TABLE IF NOT EXISTS Admins (
+           id INTEGER PRIMARY KEY AUTOINCREMENT,
+           username TEXT NOT NULL UNIQUE,
+        password_hash TEXT NOT NULL
+       );
         CREATE TABLE IF NOT EXISTS parking_spots (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             spot_name TEXT NOT NULL UNIQUE,
@@ -156,8 +175,35 @@ def priority_allocate(db, user):
         return None
     return free_spots[0]
 
+@app.route('/admin/login', methods=['GET', 'POST'])
+def admin_login():
+    if request.method == 'POST':
+        username = request.form.get('username', '').strip()
+        password = request.form.get('password', '')
 
+        if (
+            ADMIN_PASSWORD
+            and username == ADMIN_USERNAME
+            and secrets.compare_digest(password, ADMIN_PASSWORD)
+        ):
+            session.clear()
+            session['is_admin'] = True
+
+            flash('Login successful.', 'success')
+            return redirect(url_for('dashboard'))
+
+        flash('Invalid username or password.', 'error')
+
+    return render_template('admin_login.html')
+
+@app.route('/admin/logout', methods=['POST'])
+def admin_logout():
+    session.clear()
+    return redirect(url_for('admin_login'))
 @app.route("/")
+def home():
+    return redirect(url_for("user_dashboard"))
+@app.route("/admin/dashboard")
 def dashboard():
     with get_db() as db:
         total = db.execute("SELECT COUNT(*) FROM parking_spots").fetchone()[0]
@@ -194,7 +240,34 @@ def dashboard():
         users=users, spots=spots, recent=recent
     )
 
+@app.route("/user")
+def user_dashboard():
+    with get_db() as db:
+        total = db.execute(
+            "SELECT COUNT(*) FROM parking_spots"
+        ).fetchone()[0]
 
+        free = db.execute(
+            "SELECT COUNT(*) FROM parking_spots WHERE status='FREE'"
+        ).fetchone()[0]
+
+        occupied = db.execute(
+            "SELECT COUNT(*) FROM parking_spots WHERE status='OCCUPIED'"
+        ).fetchone()[0]
+
+        spots = db.execute("""
+            SELECT spot_name, status, is_accessible
+            FROM parking_spots
+            ORDER BY spot_name
+        """).fetchall()
+
+    return render_template(
+        "user_dashboard.html",
+        total=total,
+        free=free,
+        occupied=occupied,
+        spots=spots
+    )
 
 @app.route("/users")
 def user_list():
@@ -443,7 +516,7 @@ def scan():
                 ORDER BY b.id DESC LIMIT 1
             """, (user["user_id"],)).fetchone()
 
-            now = datetime.now().astimezone().isoformat(timespec="seconds")
+            now = datetime.now().astimezone().strftime("%Y-%m-%d -%H:%M:%S")
 
             if active:
                 db.execute(
