@@ -123,3 +123,381 @@
         min-height: 0;
     }
 }
+.user-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.user-actions form {
+    margin: 0;
+}
+
+.user-actions .button {
+    display: inline-block;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    text-decoration: none;
+    font: inherit;
+}
+
+.user-actions .danger {
+    background-color: #dc2626;
+    color: white;
+}
+
+.user-actions .danger:hover {
+    background-color: #b91c1c;
+}.form-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 20px;
+}
+
+.user-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.user-actions form {
+    margin: 0;
+}
+
+.user-actions .button {
+    font: inherit;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.user-actions .danger {
+    background-color: #dc2626;
+    color: white;
+}
+
+.user-actions .danger:hover {
+    background-color: #b91c1c;
+}
+
+.modal-overlay[hidden] {
+    display: none;
+}
+
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.55);
+}
+
+.modal-panel {
+    width: 100%;
+    max-width: 500px;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 28px;
+    border-radius: 12px;
+    background: var(--panel, #ffffff);
+    color: var(--text, #222222);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.25);
+}
+
+.modal-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.modal-heading h2 {
+    margin: 0;
+}
+
+.modal-close {
+    border: none;
+    background: transparent;
+    color: inherit;
+    font-size: 28px;
+    cursor: pointer;
+}
+
+.form-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+@media (max-width: 600px) {
+    .modal-panel {
+        padding: 20px;
+    }
+}
+
+/* Center the QR link inside the table cell */
+
+
+/* Center the complete QR page */
+.qr-page {
+    width: 100%;
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+/* Center the heading */
+.qr-page-heading {
+    width: 100%;
+    justify-content: center;
+    text-align: center;
+    margin-bottom: 24px;
+}
+
+/* Center the QR card */
+.qr-page .qr-panel {
+    width: 100%;
+    max-width: 450px;
+    margin: 0 auto;
+    padding: 32px 24px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
+
+/* QR user details */
+.qr-user-info {
+    margin: 0 0 24px;
+}
+
+/* Center and size the QR image */
+.qr-page .qr-image {
+    display: block;
+    width: 240px;
+    max-width: 100%;
+    height: auto;
+    margin: 0 auto 24px;
+}
+
+/* Center the buttons */
+.qr-page .qr-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    width: 100%;
+    max-width: 280px;
+    margin: 0 auto 20px;
+}
+
+.qr-page .qr-actions .button {
+    width: 100%;
+    box-sizing: border-box;
+    text-align: center;
+}
+
+.qr-page .hint {
+    max-width: 340px;
+    margin: 0 auto;
+}
+
+/* Center the complete QR scanner page */
+.scan-page {
+    width: 100%;
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+/* Center the page heading */
+.scan-page-heading {
+    width: 100%;
+    justify-content: center;
+    text-align: center;
+    margin-bottom: 24px;
+}
+
+.scan-page-heading > div {
+    max-width: 700px;
+}
+
+/* Center the scanner panel */
+.scan-page .scan-panel {
+    width: 100%;
+    max-width: 520px;
+    margin: 0 auto;
+    padding: 28px;
+    box-sizing: border-box;
+    text-align: center;
+}
+
+/* Center the camera scanning area */
+.scan-page .qr-reader {
+    width: 100%;
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+/* Center the scan status message */
+.scan-page #scan-status {
+    text-align: center;
+    margin: 20px auto;
+}
+
+/* Align the fallback form with the scanner */
+.scan-page .scan-fallback {
+    width: 100%;
+    margin: 20px auto 0;
+    text-align: left;
+}
+
+.scan-page .scan-fallback label {
+    display: block;
+    margin: 16px 0;
+}
+
+.scan-page .scan-fallback input {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.scan-page .scan-fallback button {
+    margin-top: 4px;
+}
+
+@media (max-width: 600px) {
+    .scan-page {
+        padding: 12px;
+    }
+
+    .scan-page .scan-panel {
+        padding: 18px;
+    }
+}
+
+/* Pagination toolbar */
+.pagination-toolbar,
+.pagination {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin: 16px auto;
+}
+
+.pagination-toolbar p {
+    margin: 0;
+}
+
+.page-size-form,
+.pagination-buttons {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.page-size-form select {
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font: inherit;
+}
+
+.pagination-page {
+    white-space: nowrap;
+}
+
+.pagination button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+@media (max-width: 600px) {
+    .pagination-toolbar,
+    .pagination {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .pagination-buttons {
+        flex-wrap: wrap;
+    }
+}
+
+/* Bottom pagination layout */
+.pagination-bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin: 20px 0;
+}
+
+/* Dropdown on the bottom-left */
+.pagination-bottom .page-size-form {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.pagination-bottom .page-size-form form {
+    margin: 0;
+}
+
+.pagination-bottom .page-size-form select {
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font: inherit;
+}
+
+/* Navigation on the bottom-right */
+.pagination-bottom .pagination {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 16px;
+    margin: 0;
+}
+
+.pagination-buttons {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.pagination button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+@media (max-width: 600px) {
+    .pagination-bottom {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .pagination-bottom .pagination {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .pagination-buttons {
+        flex-wrap: wrap;
+    }
+}

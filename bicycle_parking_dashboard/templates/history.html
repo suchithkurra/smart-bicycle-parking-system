@@ -1,15 +1,143 @@
+
 {% extends "base.html" %}
 {% block title %}Parking history{% endblock %}
 {% block content %}
-<div class="page-heading"><div><p class="eyebrow">RECORDS</p><h1>Parking history</h1></div></div>
+
+<div class="page-heading">
+    <div>
+        <p class="eyebrow">RECORDS</p>
+        <h1>Parking history</h1>
+    </div>
+</div>
+
 <section class="panel">
-<form method="get" class="search-form"><input name="q" value="{{ search }}" placeholder="Search name, user ID, or space">
-<button class="button" type="submit">Search</button>{% if search %}<a href="{{ url_for('history') }}">Clear</a>{% endif %}</form>
-<div class="table-wrap"><table>
-<thead><tr><th>#</th><th>Name</th><th>User ID</th><th>Space</th><th>Check-in</th><th>Check-out</th><th>Status</th></tr></thead>
-<tbody>{% for row in rows %}<tr><td>{{ row.id }}</td><td>{{ row.name }}</td><td>{{ row.user_id }}</td>
-<td>{{ row.spot_name }}</td><td>{{ row.check_in }}</td><td>{{ row.check_out or '—' }}</td>
-<td><span class="pill {{ 'pill-active' if row.status == 'ACTIVE' else '' }}">{{ row.status }}</span></td></tr>
-{% else %}<tr><td colspan="7" class="empty">No matching records.</td></tr>{% endfor %}</tbody>
-</table></div></section>
+
+    <!-- Search form -->
+    <form method="get" action="{{ url_for('history') }}"
+          class="search-form">
+        <input type="hidden" name="per_page" value="{{ per_page }}">
+
+        <input name="q" value="{{ search }}"
+               placeholder="Search name, user ID, or space">
+
+        <button class="button" type="submit">Search</button>
+
+        {% if search %}
+        <a href="{{ url_for('history', per_page=per_page) }}">Clear</a>
+        {% endif %}
+    </form>
+
+    <!-- History table -->
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Name</th>
+                    <th>User ID</th>
+                    <th>Space</th>
+                    <th>Check-in</th>
+                    <th>Check-out</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for row in rows %}
+                <tr>
+                    <td>{{ row.id }}</td>
+                    <td>{{ row.name }}</td>
+                    <td>{{ row.user_id }}</td>
+                    <td>{{ row.spot_name }}</td>
+                    <td>{{ row.check_in }}</td>
+                    <td>{{ row.check_out or '—' }}</td>
+                    <td>
+                        <span class="pill {{ 'pill-active' if row.status == 'ACTIVE' else '' }}">
+                            {{ row.status }}
+                        </span>
+                    </td>
+                </tr>
+
+                {% else %}
+                <tr>
+                    <td colspan="7" class="empty">
+                        No matching records.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</section>
+
+<!-- Bottom pagination -->
+<div class="pagination-bottom">
+
+    <!-- Rows per page: bottom-left -->
+    <div class="page-size-form">
+        <label for="history-per-page">Rows per page:</label>
+
+        <form method="get" action="{{ url_for('history') }}">
+            <input type="hidden" name="q" value="{{ search }}">
+
+            <select id="history-per-page" name="per_page"
+                    onchange="this.form.submit()">
+                {% for size in allowed_sizes %}
+                <option value="{{ size }}"
+                    {% if per_page == size %}selected{% endif %}>
+                    {{ size }}
+                </option>
+                {% endfor %}
+            </select>
+        </form>
+    </div>
+
+    <!-- Record count and navigation: bottom-right -->
+    <div class="pagination">
+
+        <span>
+            Showing
+            {% if total_records == 0 %}
+                0
+            {% else %}
+                {{ (page - 1) * per_page + 1 }}
+            {% endif %}
+            – {{ [page * per_page, total_records] | min }}
+            of {{ total_records }} records
+        </span>
+
+        <div class="pagination-buttons">
+
+            {% if page > 1 %}
+            <a class="button secondary"
+               href="{{ url_for('history', page=page-1, per_page=per_page, q=search) }}">
+                Previous
+            </a>
+            {% else %}
+            <button class="button secondary" disabled>
+                Previous
+            </button>
+            {% endif %}
+
+            <span class="pagination-page">
+                Page {{ page }} of {{ total_pages }}
+            </span>
+
+            {% if page < total_pages %}
+            <a class="button"
+               href="{{ url_for('history', page=page+1, per_page=per_page, q=search) }}">
+                Next
+            </a>
+            {% else %}
+            <button class="button" disabled>
+                Next
+            </button>
+            {% endif %}
+
+        </div>
+    </div>
+
+</div>
+
 {% endblock %}

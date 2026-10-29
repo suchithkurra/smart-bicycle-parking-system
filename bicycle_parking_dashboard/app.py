@@ -189,16 +189,150 @@ def dashboard():
     )
 
 
+
 @app.route("/users")
 def user_list():
+    # Allow only the specified page sizes.
+    allowed_sizes = [10, 25, 50, 100]
+
+    try:
+        per_page = int(request.args.get("per_page", 10))
+    except (ValueError, TypeError):
+        per_page = 10
+
+    if per_page not in allowed_sizes:
+        per_page = 10
+
+    try:
+        page = max(1, int(request.args.get("page", 1)))
+    except (ValueError, TypeError):
+        page = 1
+
     with get_db() as db:
+        # Count all registered users.
+        total_users = db.execute(
+            "SELECT COUNT(*) FROM Users"
+        ).fetchone()[0]
+
+        # Calculate the number of pages.
+        total_pages = max(
+            1, (total_users + per_page - 1) // per_page
+        )
+
+        # Keep the requested page within the valid range.
+        page = min(page, total_pages)
+
+        # Calculate where this page starts.
+        offset = (page - 1) * per_page
+
+        # Retrieve only the users needed for this page.
         users = db.execute("""
             SELECT u.*,
-                (SELECT COUNT(*) FROM bookings b WHERE b.user_id=u.user_id)
-                AS booking_count
-            FROM Users u ORDER BY u.name
-        """).fetchall()
-    return render_template("users.html", users=users)
+                (
+                    SELECT COUNT(*)
+                    FROM bookings b
+                    WHERE b.user_id = u.user_id
+                ) AS booking_count
+            FROM Users u
+            ORDER BY u.name
+            LIMIT ? OFFSET ?
+        """, (per_page, offset)).fetchall()
+
+    return render_template(
+        "users.html",
+        users=users,
+        page=page,
+        per_page=per_page,
+        total_pages=total_pages,
+        total_users=total_users,
+        allowed_sizes=allowed_sizes
+    )
+
+
+@app.route("/users/<user_id>/edit", methods=["GET", "POST"])
+def edit_user(user_id):
+    with get_db() as db:
+        user = db.execute(
+            "SELECT * FROM Users WHERE user_id = ?",
+            (user_id,)
+        ).fetchone()
+
+        if user is None:
+            flash("User not found.", "error")
+            return redirect(url_for("user_list"))
+
+        if request.method == "POST":
+            name = request.form.get("name", "").strip()
+            email = request.form.get("email", "").strip()
+            accessibility_need = int(
+                "accessibility_need" in request.form
+            )
+
+            if not name or not email:
+                flash("Name and email are required.", "error")
+                return render_template("edit_user.html", user=user)
+
+            duplicate = db.execute(
+                """
+                SELECT 1 FROM Users
+                WHERE email = ? COLLATE NOCASE
+                  AND user_id != ?
+                """,
+                (email, user_id)
+            ).fetchone()
+
+            if duplicate:
+                flash("This email is already registered.", "error")
+                return render_template("edit_user.html", user=user)
+
+            db.execute(
+                """
+                UPDATE Users
+                SET name = ?, email = ?, accessibility_need = ?
+                WHERE user_id = ?
+                """,
+                (name, email, accessibility_need, user_id)
+            )
+
+            flash("User updated successfully.", "success")
+            return redirect(url_for("user_list"))
+
+    return render_template("edit_user.html", user=user)
+
+
+@app.route("/users/<user_id>/delete", methods=["POST"])
+def delete_user(user_id):
+    with get_db() as db:
+        user = db.execute(
+            "SELECT user_id FROM Users WHERE user_id = ?",
+            (user_id,)
+        ).fetchone()
+
+        if user is None:
+            flash("User not found.", "error")
+            return redirect(url_for("user_list"))
+
+        booking = db.execute(
+            "SELECT 1 FROM bookings WHERE user_id = ? LIMIT 1",
+            (user_id,)
+        ).fetchone()
+
+        if booking:
+            flash(
+                "This user has booking history and cannot be deleted.",
+                "error"
+            )
+            return redirect(url_for("user_list"))
+
+        db.execute(
+            "DELETE FROM Users WHERE user_id = ?",
+            (user_id,)
+        )
+
+        flash("User deleted successfully.", "success")
+
+    return redirect(url_for("user_list"))
+
 
 
 
@@ -363,31 +497,85 @@ def scan():
     return render_template("scan.html")
 
 
+
 @app.route("/history")
 def history():
+    # Get the search text from the URL.
     search = request.args.get("q", "").strip()
+
+    # Allowed number of records per page.
+    allowed_sizes = [10, 25, 50, 100]
+
+    try:
+        per_page = int(request.args.get("per_page", 10))
+    except (ValueError, TypeError):
+        per_page = 10
+
+    if per_page not in allowed_sizes:
+        per_page = 10
+
+    # Get the requested page number.
+    try:
+        page = max(1, int(request.args.get("page", 1)))
+    except (ValueError, TypeError):
+        page = 1
+
+    # Build the search condition once, for both counting and retrieving.
+    where_sql = ""
+    params = []
+
+    if search:
+        pattern = f"%{search}%"
+        where_sql = """
+            WHERE u.name LIKE ?
+               OR u.user_id LIKE ?
+               OR p.spot_name LIKE ?
+        """
+        params = [pattern, pattern, pattern]
+
     with get_db() as db:
-        if search:
-            pattern = f"%{search}%"
-            rows = db.execute("""
-                SELECT b.id, u.name, u.user_id, p.spot_name,
-                       b.check_in, b.check_out, b.status
-                FROM bookings b
-                JOIN Users u ON u.user_id=b.user_id
-                JOIN parking_spots p ON p.id=b.spot_id
-                WHERE u.name LIKE ? OR u.user_id LIKE ? OR p.spot_name LIKE ?
-                ORDER BY b.id DESC
-            """, (pattern, pattern, pattern)).fetchall()
-        else:
-            rows = db.execute("""
-                SELECT b.id, u.name, u.user_id, p.spot_name,
-                       b.check_in, b.check_out, b.status
-                FROM bookings b
-                JOIN Users u ON u.user_id=b.user_id
-                JOIN parking_spots p ON p.id=b.spot_id
-                ORDER BY b.id DESC
-            """).fetchall()
-    return render_template("history.html", rows=rows, search=search)
+        # Count all records that match the search.
+        total_records = db.execute(f"""
+            SELECT COUNT(*)
+            FROM bookings b
+            JOIN Users u ON u.user_id = b.user_id
+            JOIN parking_spots p ON p.id = b.spot_id
+            {where_sql}
+        """, params).fetchone()[0]
+
+        # Calculate the number of pages.
+        total_pages = max(
+            1, (total_records + per_page - 1) // per_page
+        )
+
+        # Make sure the requested page is valid.
+        page = min(page, total_pages)
+
+        # Calculate where this page starts.
+        offset = (page - 1) * per_page
+
+        # Retrieve only the records needed for this page.
+        rows = db.execute(f"""
+            SELECT b.id, u.name, u.user_id, p.spot_name,
+                   b.check_in, b.check_out, b.status
+            FROM bookings b
+            JOIN Users u ON u.user_id = b.user_id
+            JOIN parking_spots p ON p.id = b.spot_id
+            {where_sql}
+            ORDER BY b.id DESC
+            LIMIT ? OFFSET ?
+        """, params + [per_page, offset]).fetchall()
+
+    return render_template(
+        "history.html",
+        rows=rows,
+        search=search,
+        page=page,
+        per_page=per_page,
+        total_pages=total_pages,
+        total_records=total_records,
+        allowed_sizes=allowed_sizes
+    )
 
 
 @app.route("/spaces", methods=["GET", "POST"])
@@ -395,41 +583,91 @@ def spaces():
     if request.method == "POST":
         spot_id = request.form.get("spot_id", type=int)
         status = request.form.get("status", "")
+
         if status not in ("FREE", "OCCUPIED") or not spot_id:
             flash("Invalid parking-space update.", "error")
             return redirect(url_for("spaces"))
 
-        # Manual status changes are intended for testing/admin use. They do not
-        # create or close bookings, so keep the database consistent by warning.
+        # Check whether this space has an active booking.
         with get_db() as db:
             active = db.execute(
                 "SELECT id FROM bookings WHERE spot_id=? AND status='ACTIVE'",
                 (spot_id,)
             ).fetchone()
+
             if status == "FREE" and active:
-                flash("This space has an active booking. Check the user out first.", "error")
+                flash(
+                    "This space has an active booking. Check the user out first.",
+                    "error"
+                )
             elif status == "OCCUPIED" and not active:
-                flash("Use the QR check-in page to occupy a space so a booking is recorded.", "error")
+                flash(
+                    "Use the QR check-in page to occupy a space so a booking is recorded.",
+                    "error"
+                )
             else:
                 db.execute(
                     "UPDATE parking_spots SET status=? WHERE id=?",
                     (status, spot_id)
                 )
                 flash("Parking-space status updated.", "success")
+
         return redirect(url_for("spaces"))
 
+    # Allowed number of spaces per page.
+    allowed_sizes = [10, 25, 50, 100]
+
+    try:
+        per_page = int(request.args.get("per_page", 10))
+    except (ValueError, TypeError):
+        per_page = 10
+
+    if per_page not in allowed_sizes:
+        per_page = 10
+
+    # Get the requested page.
+    try:
+        page = max(1, int(request.args.get("page", 1)))
+    except (ValueError, TypeError):
+        page = 1
+
     with get_db() as db:
+        # Count all parking spaces.
+        total_spots = db.execute(
+            "SELECT COUNT(*) FROM parking_spots"
+        ).fetchone()[0]
+
+        # Calculate total pages.
+        total_pages = max(
+            1, (total_spots + per_page - 1) // per_page
+        )
+
+        page = min(page, total_pages)
+        offset = (page - 1) * per_page
+
+        # Retrieve only the spaces for this page.
         rows = db.execute("""
             SELECT p.*,
                    u.name AS current_user_name,
                    b.check_in AS current_check_in
             FROM parking_spots p
-            LEFT JOIN bookings b ON b.spot_id=p.id AND b.status='ACTIVE'
-            LEFT JOIN Users u ON u.user_id=b.user_id
+            LEFT JOIN bookings b
+                ON b.spot_id = p.id AND b.status = 'ACTIVE'
+            LEFT JOIN Users u
+                ON u.user_id = b.user_id
             ORDER BY p.spot_name
-        """).fetchall()
-    return render_template("spaces.html", spots=rows)
+            LIMIT ? OFFSET ?
+        """, (per_page, offset)).fetchall()
 
+    return render_template(
+        "spaces.html",
+        spots=rows,
+        page=page,
+        per_page=per_page,
+        total_pages=total_pages,
+        total_spots=total_spots,
+        allowed_sizes=allowed_sizes
+    )
 
 @app.errorhandler(404)
 def not_found(_error):
