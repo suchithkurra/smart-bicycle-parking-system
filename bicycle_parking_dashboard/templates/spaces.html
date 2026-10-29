@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Parking spaces{% endblock %}
+{% block content %}
+<div class="page-heading"><div><p class="eyebrow">SPACE MANAGEMENT</p><h1>Parking spaces</h1>
+<p class="muted">Use QR check-in/out to change occupancy during normal operation.</p></div></div>
+<section class="panel"><div class="table-wrap"><table>
+<thead><tr><th>Space</th><th>Type</th><th>Status</th><th>Current user</th><th>Check-in</th><th>Admin test control</th></tr></thead>
+<tbody>{% for spot in spots %}
+<tr><td>{{ spot.spot_name }}</td><td>{{ 'Accessible' if spot.is_accessible else 'Standard' }}</td>
+<td><span class="pill {{ 'pill-active' if spot.status == 'OCCUPIED' else '' }}">{{ spot.status }}</span></td>
+<td>{{ spot.current_user_name or '—' }}</td><td>{{ spot.current_check_in or '—' }}</td>
+<td><form method="post" class="inline-form"><input type="hidden" name="spot_id" value="{{ spot.id }}">
+<select name="status"><option value="FREE" {% if spot.status == 'FREE' %}selected{% endif %}>FREE</option>
+<option value="OCCUPIED" {% if spot.status == 'OCCUPIED' %}selected{% endif %}>OCCUPIED</option></select>
+<button class="small-button" type="submit">Update</button></form></td></tr>
+{% else %}<tr><td colspan="6" class="empty">No parking spaces found.</td></tr>{% endfor %}</tbody>
+</table></div></section>
+{% endblock %}

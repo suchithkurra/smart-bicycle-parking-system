@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Users{% endblock %}
+{% block content %}
+<div class="page-heading"><div><p class="eyebrow">PEOPLE</p><h1>Registered users</h1></div>
+<a class="button" href="{{ url_for('add_user') }}">＋ Register user</a></div>
+<section class="panel"><div class="table-wrap"><table>
+<thead><tr><th>Name</th><th>User ID</th><th>Email</th><th>Accessibility</th><th>Bookings</th><th>QR code</th></tr></thead>
+<tbody>{% for user in users %}
+<tr><td>{{ user.name }}</td><td>{{ user.user_id }}</td><td>{{ user.email }}</td>
+<td>{{ 'Required' if user.accessibility_need else 'No' }}</td><td>{{ user.booking_count }}</td>
+<td><a href="{{ url_for('user_qr', user_id=user.user_id) }}">View / download QR</a></td></tr>
+{% else %}<tr><td colspan="6" class="empty">No users registered.</td></tr>{% endfor %}</tbody>
+</table></div></section>
+{% endblock %}

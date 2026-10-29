@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}QR check-in/out{% endblock %}
+{% block content %}
+<div class="page-heading"><div><p class="eyebrow">PARKING SESSION</p><h1>QR check-in / check-out</h1>
+<p class="muted">Point the camera at the user’s parking QR code. The first scan checks in and assigns a space; a later scan checks out.</p></div></div>
+<section class="panel narrow">
+  <div id="reader" class="qr-reader"></div>
+  <p id="scan-status" class="hint">Allow camera access to scan a QR code.</p>
+  <form id="scan-form" method="post" class="form">
+    <input type="hidden" name="qr_token" id="qr_token">
+    <details class="scan-fallback">
+      <summary>Camera unavailable? Paste the QR token</summary>
+      <label>QR token<input name="qr_token_fallback" id="qr_token_fallback" autocomplete="off" placeholder="Paste token from the QR page"></label>
+      <button class="button secondary" type="button" id="fallback-submit">Process token</button>
+    </details>
+  </form>
+</section>
+{% endblock %}
+{% block scripts %}
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<script>
+  const form = document.getElementById("scan-form");
+  const tokenInput = document.getElementById("qr_token");
+  const fallbackInput = document.getElementById("qr_token_fallback");
+  const statusEl = document.getElementById("scan-status");
+  let scanner = null;
+  let submitting = false;
+
+  function submitToken(value) {
+    const token = (value || "").trim();
+    if (!token || submitting) {
+      if (!token) statusEl.textContent = "No QR token found. Scan the code or paste the token.";
+      return;
+    }
+    submitting = true;
+    tokenInput.value = token;
+    statusEl.textContent = "QR code recognized. Checking in or out…";
+    if (scanner) {
+      scanner.stop().catch(() => {});
+    }
+    form.submit();
+  }
+
+  document.getElementById("fallback-submit").addEventListener("click", () => {
+    submitToken(fallbackInput.value);
+  });
+
+  if (window.Html5Qrcode) {
+    scanner = new Html5Qrcode("reader");
+    scanner.start(
+      { facingMode: "environment" },
+      { fps: 10, qrbox: { width: 250, height: 250 } },
+      (decodedText) => submitToken(decodedText),
+      () => {}
+    ).then(() => {
+      statusEl.textContent = "Camera ready. Hold the QR code in the frame.";
+    }).catch((error) => {
+      statusEl.textContent = "Camera could not start (" + error + "). Use the paste option below, or open this page on localhost/HTTPS.";
+    });
+  } else {
+    statusEl.textContent = "QR scanner library did not load. Use the paste option below.";
+  }
+</script>
+{% endblock %}
